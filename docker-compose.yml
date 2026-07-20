@@ -1,0 +1,28 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: mailcatch
+      POSTGRES_USER: mailcatch
+      POSTGRES_PASSWORD: mailcatch_secret
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+  backend:
+    build: ./backend
+    ports:
+      - "3001:3001"
+      - "2525:2525"
+    environment:
+      PORT: 3001
+      DATABASE_URL: postgresql://mailcatch:mailcatch_secret@postgres:5432/mailcatch
+      JWT_SECRET: super-secret-dev-key-change-in-prod
+      JWT_EXPIRES_IN: 7d
+      SMTP_PORT: 2525
+      MAIL_DOMAIN: mailcatch.dev
+      CORS_ORIGIN: http://localhost:3000
+    depends_on:
+      - postgres
+volumes:
+  pgdata:

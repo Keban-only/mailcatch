@@ -1,0 +1,18 @@
+{
+  "common": {
+    "login": "Log in",
+    "register": "Sign up",
+    "getStarted": "Get Started Free",
+    "docs": "Docs",
+    "features": "Features",
+    "pricing": "Pricing"
+  },
+  "hero": {
+    "badge": "Free tier — 100 inboxes/month",
+    "title": "Email API for",
+    "titleHighlight": "Automated Testing",
+    "description": "Create temporary inboxes, receive emails, auto-extract OTP codes. One API call in your Playwright, Cypress, or Selenium tests.",
+    "startFree": "Start for Free",
+    "viewDocs": "View Docs"
+  }
+}
