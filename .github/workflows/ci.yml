@@ -127,3 +127,5 @@ jobs:
         with:
           target: http://localhost:3001
           cmd_options: -a
+          allow_issue_writing: true
+          fail_action: false
