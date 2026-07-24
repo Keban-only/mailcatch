@@ -89,6 +89,8 @@ jobs:
     needs: [container-scan]
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
+    permissions:
+      issues: write
     services:
       postgres:
         image: postgres:16-alpine
