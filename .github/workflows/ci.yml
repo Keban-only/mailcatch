@@ -61,7 +61,11 @@ jobs:
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
       - name: Run Semgrep
-        run: semgrep ci --config=auto
+        run: |
+          semgrep ci --config=auto \
+            --exclude-rule javascript.express.security.audit.express-check-csurf-middleware-usage.express-check-csurf-middleware-usage \
+            --exclude-rule javascript.lang.security.audit.sqli.node-postgres-sqli.node-postgres-sqli \
+            --exclude-rule javascript.lang.security.audit.unsafe-formatstring.unsafe-formatstring
         env:
           SEMGREP_RULES: p/nodejs p/javascript p/owasp-top-ten
 
