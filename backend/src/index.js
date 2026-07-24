@@ -25,11 +25,21 @@ app.use(morgan('short'));
 
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 100,
+  max: 1000,
   standardHeaders: true,
   legacyHeaders: false,
 });
+
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many login attempts, try again in 15 minutes' },
+});
+
 app.use('/api/', limiter);
+app.use('/api/auth', authLimiter);
 
 app.use('/api/auth', authRoutes);
 app.use('/api/inboxes', inboxRoutes);
