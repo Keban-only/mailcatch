@@ -1,0 +1,4 @@
+# sharp (transitive dependency via Next.js)
+# Cannot update: next-intl@3 doesn't support Next.js 16, blocks sharp update
+# Risk: LOW for our use case - we don't process user-uploaded images
+GHSA-f88m-g3jw-g9cj

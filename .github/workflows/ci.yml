@@ -1,0 +1,123 @@
+name: CI/CD Security Pipeline
+on: 
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  secrets-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          fetch-depth: 0
+      - name: Run Gitleaks
+        uses: gitleaks/gitleaks-action@dcedce43c6f43de0b836d1fe38946645c9c638dc
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  test:
+    needs: [secrets-scan]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22
+      - name: Install dependencies
+        run: npm ci
+        working-directory: backend
+      - name: Run tests
+        run: npm test --if-present
+        working-directory: backend 
+
+  sca:
+    needs: [secrets-scan]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22
+      - name: Install dependencies
+        run: npm ci
+        working-directory: backend
+      - name: npm audit
+        run: npm audit --audit-level=high
+        working-directory: backend
+      - name: Trivy filesystem scan
+        uses: aquasecurity/trivy-action@c07df6fec6fa692e6fd1200d50aaa1fdd66f03c8
+        with:
+          scan-type: fs
+          scan-ref: .
+          severity: HIGH,CRITICAL
+          exit-code: '1'
+  sast:
+    needs: [secrets-scan]
+    runs-on: ubuntu-latest
+    container:
+      image: returntocorp/semgrep
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+      - name: Run Semgrep
+        run: semgrep ci --config=auto
+        env:
+          SEMGREP_RULES: p/nodejs p/javascript p/owasp-top-ten
+
+  container-scan:
+    needs: [test, sast, sca]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+      - name: Build Docker image
+        run: docker build -t mailcatch-backend:${{ github.sha }} ./backend
+      - name: Trivy image scan
+        uses: aquasecurity/trivy-action@c07df6fec6fa692e6fd1200d50aaa1fdd66f03c8
+        with:
+          image-ref: mailcatch-backend:${{ github.sha }}
+          severity: HIGH,CRITICAL
+          exit-code: '1'
+          format: table
+  
+  
+  dast:
+    needs: [container-scan]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: mailcatch
+          POSTGRES_USER: mailcatch
+          POSTGRES_PASSWORD: mailcatch_secret
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22
+      - name: Install and start app
+        run: |
+          cd backend && npm ci
+          node migrations/run.js
+          node src/index.js &
+          sleep 5
+        env:
+          DATABASE_URL: postgresql://mailcatch:mailcatch_secret@localhost:5432/mailcatch
+          JWT_SECRET: test-secret-for-ci
+          PORT: 3001
+          SMTP_PORT: 2525
+          MAIL_DOMAIN: mailcatch.dev
+      - name: OWASP ZAP Baseline Scan
+        uses: zaproxy/action-baseline@906a3c93ffde4864839d31a93daadcbd2737b4da
+        with:
+          target: http://localhost:3001
+          cmd_options: -a
