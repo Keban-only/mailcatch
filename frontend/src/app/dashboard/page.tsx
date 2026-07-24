@@ -40,6 +40,7 @@ export default function DashboardPage() {
   const [copied, setCopied] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showLimitModal, setShowLimitModal] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
 
   const loadInboxes = useCallback(async (targetPage: number) => {
@@ -77,6 +78,10 @@ export default function DashboardPage() {
 
   async function createInbox() {
     if (creating) return;
+    if (usage && usage.used >= usage.limit) {
+      setShowLimitModal(true);
+      return;
+    }
     setCreating(true);
     setError(null);
     try {
@@ -85,7 +90,11 @@ export default function DashboardPage() {
       setPage(1);
       await loadInboxes(1);
     } catch (err: any) {
-      setError(err.message || 'Failed to create inbox');
+      if (err.message?.includes('limit')) {
+        setShowLimitModal(true);
+      } else {
+        setError(err.message || 'Failed to create inbox');
+      }
     } finally {
       setCreating(false);
     }
@@ -368,6 +377,43 @@ export default function DashboardPage() {
         onConfirm={deleteSelected}
         onCancel={() => setShowDeleteModal(false)}
       />
+
+      {/* Limit reached modal */}
+      {showLimitModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="fixed inset-0 bg-black/50" onClick={() => setShowLimitModal(false)} />
+          <div className="relative bg-white rounded-xl shadow-xl border border-slate-200 p-6 w-full max-w-md mx-4">
+            <div className="text-center">
+              <div className="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg className="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                </svg>
+              </div>
+              <h3 className="text-lg font-semibold text-slate-900 mb-2">Monthly limit reached</h3>
+              <p className="text-sm text-slate-600 mb-2">
+                You've used all <strong>{usage?.limit}</strong> inboxes for this month on the <strong className="capitalize">{usage?.plan}</strong> plan.
+              </p>
+              <p className="text-xs text-slate-400 mb-6">
+                Your limit resets automatically at the start of each billing cycle.
+              </p>
+              {usage?.plan !== 'team' && (
+                <a
+                  href="mailto:support@mailcatch.dev?subject=Plan upgrade"
+                  className="block w-full bg-brand-600 text-white py-3 rounded-lg font-semibold hover:bg-brand-700 transition mb-3 text-center"
+                >
+                  {usage?.plan === 'free' ? 'Upgrade to Pro — 5,000/mo' : 'Upgrade to Team — 50,000/mo'}
+                </a>
+              )}
+              <button
+                onClick={() => setShowLimitModal(false)}
+                className="w-full py-2 text-sm text-slate-500 hover:text-slate-700"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
