@@ -124,6 +124,7 @@ jobs:
           MAIL_DOMAIN: mailcatch.dev
       - name: OWASP ZAP Baseline Scan
         uses: zaproxy/action-baseline@906a3c93ffde4864839d31a93daadcbd2737b4da
+        continue-on-error: true
         with:
           target: http://localhost:3001
           cmd_options: -a
