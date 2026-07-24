@@ -128,4 +128,4 @@ jobs:
           target: http://localhost:3001
           cmd_options: -a
           allow_issue_writing: true
-          artifact_name: zap-scan-report
+          fail_action: false
