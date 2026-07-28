@@ -110,6 +110,18 @@ jobs:
             curl -s http://localhost:3001/api/auth/login > /dev/null && break
             sleep 1
           done
+      - name: Install frontend & build
+        run: cd frontend && npm ci && npm run build
+      - name: Start frontend
+        run: cd frontend && npm start &
+        env:
+          NEXT_PUBLIC_API_URL: http://localhost:3001
+      - name: Wait for frontend
+        run: |
+          for i in $(seq 1 30); do
+            curl -s http://localhost:3000 > /dev/null && break
+            sleep 1
+          done
       - name: Install test dependencies
         run: npm ci
       - name: Install Playwright browsers
