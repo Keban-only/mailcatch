@@ -38,7 +38,8 @@ export function DashboardHeader() {
               <Link
                 key={item.href}
                 href={item.href}
-                className={pathname === item.href
+                className={
+                  (item.href === '/dashboard' ? pathname === '/dashboard' || pathname.startsWith('/dashboard/inbox') : pathname === item.href)
                   ? 'text-brand-600 font-medium'
                   : 'text-slate-600 hover:text-slate-900'}
               >
