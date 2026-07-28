@@ -111,9 +111,11 @@ jobs:
             sleep 1
           done
       - name: Install frontend & build
-        run: cd frontend && npm ci --legacy-peer-deps && npm run build
+        run: npm ci --legacy-peer-deps && npm run build
+        working-directory: frontend
       - name: Start frontend
-        run: cd frontend && npm start &
+        run: npm start &
+        working-directory: frontend
         env:
           NEXT_PUBLIC_API_URL: http://localhost:3001
       - name: Wait for frontend
