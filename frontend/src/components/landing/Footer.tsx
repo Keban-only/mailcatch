@@ -37,6 +37,8 @@ export function Footer() {
           <div>
             <h4 className="text-white font-semibold mb-4">Company</h4>
             <ul className="space-y-2 text-sm">
+              <li><Link href="/privacy" className="hover:text-white transition">Privacy Policy</Link></li>
+              <li><Link href="/terms" className="hover:text-white transition">Terms of Service</Link></li>
               <li><a href="mailto:support@mailcatch.dev" className="hover:text-white transition">Contact</a></li>
               <li><a href="https://github.com/Keban-only/mailcatch" className="hover:text-white transition">GitHub</a></li>
             </ul>
