@@ -13,8 +13,9 @@ router.post('/', async (req, res, next) => {
     const limits = getPlanLimits(req.user.plan);
 
     const usageResult = await db.query(
-      `SELECT COUNT(*) as count FROM inboxes
-       WHERE user_id = $1 AND created_at > NOW() - INTERVAL '30 days'`,
+      `SELECT COUNT(*) as count FROM usage_log
+       WHERE user_id = $1 AND action = 'inbox_created'
+       AND created_at > NOW() - INTERVAL '30 days'`,
       [req.user.id]
     );
 
@@ -68,12 +69,26 @@ router.get('/', async (req, res, next) => {
       [req.user.id]
     );
 
+    const usageResult = await db.query(
+      `SELECT COUNT(*) as count FROM usage_log
+       WHERE user_id = $1 AND action = 'inbox_created'
+       AND created_at > NOW() - INTERVAL '30 days'`,
+      [req.user.id]
+    );
+
+    const limits = getPlanLimits(req.user.plan);
+
     res.json({
       data: result.rows,
       pagination: {
         page,
         limit,
         total: parseInt(countResult.rows[0].total),
+      },
+      usage: {
+        used: parseInt(usageResult.rows[0].count),
+        limit: limits.maxInboxesPerMonth,
+        plan: req.user.plan,
       },
     });
   } catch (err) {

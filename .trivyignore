@@ -2,3 +2,6 @@
 # Cannot update: next-intl@3 doesn't support Next.js 16, blocks sharp update
 # Risk: LOW for our use case - we don't process user-uploaded images
 GHSA-f88m-g3jw-g9cj
+
+# brace-expansion in system npm inside node:22-alpine — not exploitable by app code
+CVE-2026-14257

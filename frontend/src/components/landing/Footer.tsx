@@ -20,10 +20,9 @@ export function Footer() {
           <div>
             <h4 className="text-white font-semibold mb-4">Product</h4>
             <ul className="space-y-2 text-sm">
-              <li><Link href="#features" className="hover:text-white transition">Features</Link></li>
-              <li><Link href="#pricing" className="hover:text-white transition">Pricing</Link></li>
+              <li><Link href="/#features" className="hover:text-white transition">Features</Link></li>
+              <li><Link href="/#pricing" className="hover:text-white transition">Pricing</Link></li>
               <li><Link href="/docs" className="hover:text-white transition">Documentation</Link></li>
-              <li><Link href="/docs#api" className="hover:text-white transition">API Reference</Link></li>
             </ul>
           </div>
 
@@ -32,8 +31,6 @@ export function Footer() {
             <ul className="space-y-2 text-sm">
               <li><Link href="/docs#playwright" className="hover:text-white transition">Playwright</Link></li>
               <li><Link href="/docs#cypress" className="hover:text-white transition">Cypress</Link></li>
-              <li><Link href="/docs#selenium" className="hover:text-white transition">Selenium</Link></li>
-              <li><Link href="/docs#github-actions" className="hover:text-white transition">GitHub Actions</Link></li>
             </ul>
           </div>
 
@@ -43,6 +40,7 @@ export function Footer() {
               <li><Link href="/privacy" className="hover:text-white transition">Privacy Policy</Link></li>
               <li><Link href="/terms" className="hover:text-white transition">Terms of Service</Link></li>
               <li><a href="mailto:support@mailcatch.dev" className="hover:text-white transition">Contact</a></li>
+              <li><a href="https://github.com/Keban-only/mailcatch" className="hover:text-white transition">GitHub</a></li>
             </ul>
           </div>
         </div>

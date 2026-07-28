@@ -1,0 +1,34 @@
+{
+  "name": "mailcatch",
+  "version": "1.0.0",
+  "description": "**Email API for Automated Testing**",
+  "main": "index.js",
+  "scripts": {
+    "test": "npx playwright test",
+    "test:api": "npx playwright test --project=api",
+    "test:ui": "npx playwright test --project=ui",
+    "test:auth": "npx playwright test auth.spec.ts",
+    "test:inboxes": "npx playwright test inboxes.spec.ts",
+    "test:messages": "npx playwright test messages.spec.ts",
+    "test:keys": "npx playwright test keys.spec.ts",
+    "test:plans": "npx playwright test plans.spec.ts",
+    "test:parallel": "npx playwright test parallel.spec.ts",
+    "test:security": "npx playwright test security.spec.ts",
+    "test:report": "npx playwright show-report tests/reports/html"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Keban-only/mailcatch.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Keban-only/mailcatch/issues"
+  },
+  "homepage": "https://github.com/Keban-only/mailcatch#readme",
+  "devDependencies": {
+    "@playwright/test": "^1.62.0",
+    "@types/node": "^26.1.2"
+  }
+}
