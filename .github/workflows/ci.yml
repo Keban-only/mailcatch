@@ -111,7 +111,7 @@ jobs:
             sleep 1
           done
       - name: Install frontend & build
-        run: cd frontend && npm ci && npm run build
+        run: cd frontend && npm ci && npm run build --legacy-peer-deps && npm run build
       - name: Start frontend
         run: cd frontend && npm start &
         env:
