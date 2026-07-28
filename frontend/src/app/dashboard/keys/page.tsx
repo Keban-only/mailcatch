@@ -107,7 +107,14 @@ export default function KeysPage() {
         <div className="flex items-center justify-between mb-8">
           <div>
             <h1 className="text-2xl font-bold text-slate-900">API Keys</h1>
-            <p className="text-sm text-slate-500 mt-1">Manage your API keys for programmatic access</p>
+            <p className="text-sm text-slate-500 mt-1">
+              Manage your API keys for programmatic access
+              {keys.length > 0 && (
+                <span className="ml-2 text-slate-400">
+                  ({keys.filter(k => k.is_active).length} active / {keys.length} total)
+                </span>
+              )}
+            </p>
           </div>
           <button
             onClick={() => setShowCreate(true)}
@@ -194,10 +201,21 @@ export default function KeysPage() {
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {keys.map((key) => (
-                  <tr key={key.id} className="hover:bg-slate-50 transition">
-                    <td className="px-6 py-4 font-medium text-slate-900">{key.name}</td>
+                  <tr key={key.id} className={`transition ${key.is_active ? 'hover:bg-slate-50' : 'opacity-50 bg-slate-50'}`}>
                     <td className="px-6 py-4">
-                      <code className="text-sm text-slate-500 bg-slate-100 px-2 py-1 rounded">{key.key_preview}</code>
+                      <span className={`font-medium ${key.is_active ? 'text-slate-900' : 'text-slate-400 line-through'}`}>
+                        {key.name}
+                      </span>
+                      {!key.is_active && (
+                        <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-700">
+                          Revoked
+                        </span>
+                      )}
+                    </td>
+                    <td className="px-6 py-4">
+                      <code className={`text-sm px-2 py-1 rounded ${key.is_active ? 'text-slate-500 bg-slate-100' : 'text-slate-400 bg-slate-50 line-through'}`}>
+                        {key.key_preview}
+                      </code>
                     </td>
                     <td className="px-6 py-4 text-sm text-slate-600 hidden sm:table-cell">
                       {new Date(key.created_at).toLocaleDateString()}
@@ -207,14 +225,18 @@ export default function KeysPage() {
                     </td>
                     <td className="px-6 py-4 text-right">
                       {key.is_active ? (
-                        <button
-                          onClick={() => setRevokeId(key.id)}
-                          className="text-red-600 hover:text-red-700 text-sm font-medium"
-                        >
-                          Revoke
-                        </button>
+                        key.name === 'Default' ? (
+                          <span className="text-xs text-slate-400">Protected</span>
+                        ) : (
+                          <button
+                            onClick={() => setRevokeId(key.id)}
+                            className="text-red-600 hover:text-red-700 text-sm font-medium"
+                          >
+                            Revoke
+                          </button>
+                        )
                       ) : (
-                        <span className="text-slate-400 text-sm">Revoked</span>
+                        <span className="text-xs text-slate-400">Disabled</span>
                       )}
                     </td>
                   </tr>

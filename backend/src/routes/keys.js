@@ -55,14 +55,23 @@ router.get('/', async (req, res, next) => {
 
 router.delete('/:id', async (req, res, next) => {
   try {
-    const result = await db.query(
-      'UPDATE api_keys SET is_active = false WHERE id = $1 AND user_id = $2 RETURNING id',
+    const keyResult = await db.query(
+      'SELECT id, name FROM api_keys WHERE id = $1 AND user_id = $2',
       [req.params.id, req.user.id]
     );
 
-    if (result.rows.length === 0) {
+    if (keyResult.rows.length === 0) {
       return res.status(404).json({ error: 'API key not found' });
     }
+
+    if (keyResult.rows[0].name === 'Default') {
+      return res.status(403).json({ error: 'Cannot revoke the default API key' });
+    }
+
+    await db.query(
+      'UPDATE api_keys SET is_active = false WHERE id = $1 AND user_id = $2',
+      [req.params.id, req.user.id]
+    );
 
     res.json({ revoked: true });
   } catch (err) {
