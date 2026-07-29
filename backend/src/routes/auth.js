@@ -117,6 +117,61 @@ router.post('/refresh', authenticateToken, async (req, res, next) => {
   }
 });
 
+router.patch('/profile', authenticateToken, async (req, res, next) => {
+  try {
+    const { name, email, currentPassword, newPassword } = req.body;
+    const userId = req.user.id;
+
+    const userResult = await db.query('SELECT * FROM users WHERE id = $1', [userId]);
+    if (userResult.rows.length === 0) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    const user = userResult.rows[0];
+
+    if (newPassword) {
+      if (!currentPassword) {
+        return res.status(400).json({ error: 'Current password is required to change password' });
+      }
+      const valid = await bcrypt.compare(currentPassword, user.password_hash);
+      if (!valid) {
+        return res.status(401).json({ error: 'Current password is incorrect' });
+      }
+      if (newPassword.length < 8) {
+        return res.status(400).json({ error: 'New password must be at least 8 characters' });
+      }
+      const hash = await bcrypt.hash(newPassword, 12);
+      await db.query('UPDATE users SET password_hash = $1 WHERE id = $2', [hash, userId]);
+    }
+
+    if (email && email.toLowerCase() !== user.email) {
+      if (!currentPassword) {
+        return res.status(400).json({ error: 'Current password is required to change email' });
+      }
+      const valid = await bcrypt.compare(currentPassword, user.password_hash);
+      if (!valid) {
+        return res.status(401).json({ error: 'Current password is incorrect' });
+      }
+      const existing = await db.query('SELECT id FROM users WHERE email = $1', [email.toLowerCase()]);
+      if (existing.rows.length > 0) {
+        return res.status(409).json({ error: 'Email already in use' });
+      }
+      await db.query('UPDATE users SET email = $1 WHERE id = $2', [email.toLowerCase(), userId]);
+    }
+
+    if (name !== undefined) {
+      await db.query('UPDATE users SET name = $1 WHERE id = $2', [name || null, userId]);
+    }
+
+    const updated = await db.query(
+      'SELECT id, email, name, role, plan, created_at FROM users WHERE id = $1',
+      [userId]
+    );
+    res.json(updated.rows[0]);
+  } catch (err) {
+    next(err);
+  }
+});
+
 router.get('/me', authenticateToken, async (req, res, next) => {
   try {
     const result = await db.query(
